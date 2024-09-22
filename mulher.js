@@ -46,10 +46,30 @@ router.post('/mulheres', (request, response) =>{
   }
 
   mulheres.push(novaMulher);
-  
+
   response.status(201).json(novaMulher);
 
   response.json(mulheres)
+})
+
+router.patch('/mulheres/:id', (request,response) =>{
+  const id = request.params.id;
+  const {nome, imagem, minibio} = request.body
+
+  //encontra mulher pelo id
+  const mulher = mulheres.find(function(mulher){
+    return mulher.id === id
+  }
+)
+  if(!mulher){
+    return response.status(404).json({mensagem:'Mulher não encontrada.'})
+  } 
+
+  if (nome) mulher.nome = nome;
+  if(imagem) mulher.imagem = imagem;
+  if(minibio) mulher.minibio = minibio;
+
+  response.json(mulher)
 })
 
 export default router;
