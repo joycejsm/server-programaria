@@ -49,7 +49,6 @@ router.post('/mulheres', (request, response) =>{
 
   response.status(201).json(novaMulher);
 
-  response.json(mulheres)
 })
 
 router.patch('/mulheres/:id', (request,response) =>{
@@ -70,6 +69,22 @@ router.patch('/mulheres/:id', (request,response) =>{
   if(minibio) mulher.minibio = minibio;
 
   response.json(mulher)
+});
+
+router.delete('/mulheres/:id', (request,response) =>{
+  const id = request.params.id;
+  
+  //encontra a mulher pelo if
+  const index = mulheres.findIndex(mulher => mulher.id === id)
+
+  // se não encontrar, retorna 404
+  if (index === -1) {
+    return response.status(404).json({mensagem: 'Mulher não encontrada.'})
+  }
+
+  mulheres.splice(index, 1);
+
+  response.status(200).json({mensagem: 'Mulher deletada com sucesso.'})
 })
 
 export default router;
