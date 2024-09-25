@@ -1,90 +1,72 @@
 import express from 'express';
 const router = express.Router();
-import { v4 as uuidv4 } from 'uuid';
+import Diva from './mulherModel.js';
 
-const mulheres = [
-    { 
-      id:'1',
-      nome: "Ana Silva",
-      imagem: "https://example.com/ana.jpg",
-      minibio: "Ana é uma desenvolvedora de software com 10 anos de experiência em JavaScript e Python."
-    },
-    {
-      id:'2',
-      nome: "Beatriz Souza",
-      imagem: "https://example.com/beatriz.jpg",
-      minibio: "Beatriz é uma engenheira de dados apaixonada por big data e machine learning."
-    },
-    {
-      id:'3',
-      nome: "Carla Oliveira",
-      imagem: "https://example.com/carla.jpg",
-      minibio: "Carla é uma designer UX/UI que adora criar interfaces intuitivas e acessíveis."
-    },
-    {
-      id: '4',
-      nome: "Daniela Costa",
-      imagem: "https://example.com/daniela.jpg",
-      minibio: "Daniela é uma cientista de dados com foco em análise preditiva e visualização de dados."
-    },
-    { id:'5',
-      nome: "Elisa Fernandes",
-      imagem: "https://example.com/elisa.jpg",
-      minibio: "Elisa é uma gerente de projetos com vasta experiência em metodologias ágeis."
-    }
-  ];
 
-router.get('/mulheres', (request, response)=>{ 
-    response.json(mulheres)
-})
-router.post('/mulheres', (request, response) =>{
-  const novaMulher = {
-    id: uuidv4(),
-    nome: request.body.nome,
-    imagem: request.body.imagem,
-    minibio: request.body.minibio
+router.get('/mulheres', async (request, response)=>{ 
+  try {
+    const divas = await Diva.find(); //search for all women in db
+    response.json(divas);
+  } catch (error) {
+    response.status(500).json({mensagem: 'Erro ao buscar as mulheres'})
+ 
   }
+})
+router.post('/mulheres', async (request, response) =>{
+  const {nome, imagem, minibio} = request.body;
 
-  mulheres.push(novaMulher);
+  try {
+    const novaDiva = new Diva({
+      nome,
+      imagem,
+      minibio
+    });
 
-  response.status(201).json(novaMulher);
-
+    await novaDiva.save(); //saves the new woman in db
+    response.status(201).json(novaDiva);
+  } catch (error) {
+    response.status(500).json({mensagem: 'Erro ao criar uma nova mulher.'})
+  }
 })
 
-router.patch('/mulheres/:id', (request,response) =>{
+router.patch('/mulheres/:id', async (request,response) =>{
   const id = request.params.id;
   const {nome, imagem, minibio} = request.body
 
-  //encontra mulher pelo id
-  const mulher = mulheres.find(function(mulher){
-    return mulher.id === id
+  try {
+    const divaAtualizada = await Diva.findByIdAndUpdate(
+      id,
+      {nome, imagem, minibio},
+      {new: true, runValidators: true} // return woman updated and validate data
+    );
+    
+    if (!divaAtualizada) {
+      return response.status(404).json({mensagem: 'Mulher não encontrada.'})
+
+    }
+
+    response.json(mulherAtualizada);
+  } catch (error) {
+    response.status(500).json({mensagem: 'Erro ao atualizar a mulher'})
+
   }
-)
-  if(!mulher){
-    return response.status(404).json({mensagem:'Mulher não encontrada.'})
-  } 
-
-  if (nome) mulher.nome = nome;
-  if(imagem) mulher.imagem = imagem;
-  if(minibio) mulher.minibio = minibio;
-
-  response.json(mulher)
 });
 
-router.delete('/mulheres/:id', (request,response) =>{
+router.delete('/mulheres/:id', async (request,response) =>{
   const id = request.params.id;
   
-  //encontra a mulher pelo if
-  const index = mulheres.findIndex(mulher => mulher.id === id)
+  try {
+    const mulherDeletada = await Diva.findByIdAndUpdate(id);
 
-  // se não encontrar, retorna 404
-  if (index === -1) {
-    return response.status(404).json({mensagem: 'Mulher não encontrada.'})
+    if(!mulherDeletada) {
+      return response.status(404).json({mensagem: 'Mulher não encontrada'})
+
+    }
+    response.status(200).json({mensagem: 'Mulher deletada com sucesso'});
+
+  } catch (error) {
+    response.status(500).json({mensagem: 'Erro ao deletar a mulher'})
   }
-
-  mulheres.splice(index, 1);
-
-  response.status(200).json({mensagem: 'Mulher deletada com sucesso.'})
 })
 
 export default router;
