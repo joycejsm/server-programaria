@@ -2,6 +2,9 @@ import express from 'express';
 import olaRouter from './ola.js';
 import mulherRouter from './mulher.js';
 import horaLocal from './horaLocal.js';
+import connectionBD from './bancoDeDados.js';
+import chalk from 'chalk';
+connectionBD()
 
 const app = express();
 app.use(express.json());
