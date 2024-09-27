@@ -1,7 +1,8 @@
 import express from 'express';
-const router = express.Router();
+
 import Diva from './mulherModel.js';
 
+const router = express.Router();
 
 router.get('/mulheres', async (request, response)=>{ 
   try {
@@ -13,30 +14,39 @@ router.get('/mulheres', async (request, response)=>{
   }
 })
 router.post('/mulheres', async (request, response) =>{
-  const {nome, imagem, minibio} = request.body;
+  const {nome, imagem, minibio, citacao} = request.body;
 
   try {
     const novaDiva = new Diva({
       nome,
       imagem,
-      minibio
+      minibio, 
+      citacao
     });
 
-    await novaDiva.save(); //saves the new woman in db
-    response.status(201).json(novaDiva);
+    const mulherCriada = await novaDiva.save(); //saves the new woman in db
+    response.status(201).json(mulherCriada);
   } catch (error) {
-    response.status(500).json({mensagem: 'Erro ao criar uma nova mulher.'})
+    console.error('Erro ao criar uma nova diva', error)
+
+    if(error.name === 'ValidationError') {
+      response.status(400).json({mensagem: 'Ddos inválidos', erros: error.errors})
+
+    } else {
+      response.status(500).json({mensagem: 'Erro ao criar uma nova mulher.'})
+    }
+    // response.status(500).json({mensagem: 'Erro ao criar uma nova mulher.'})
   }
-})
+}) 
 
 router.patch('/mulheres/:id', async (request,response) =>{
   const id = request.params.id;
-  const {nome, imagem, minibio} = request.body
+  const {nome, imagem, minibio, citacao} = request.body
 
   try {
     const divaAtualizada = await Diva.findByIdAndUpdate(
       id,
-      {nome, imagem, minibio},
+      {nome, imagem, minibio, citacao},
       {new: true, runValidators: true} // return woman updated and validate data
     );
     
@@ -45,7 +55,7 @@ router.patch('/mulheres/:id', async (request,response) =>{
 
     }
 
-    response.json(mulherAtualizada);
+    response.json(divaAtualizada);
   } catch (error) {
     response.status(500).json({mensagem: 'Erro ao atualizar a mulher'})
 
@@ -56,7 +66,7 @@ router.delete('/mulheres/:id', async (request,response) =>{
   const id = request.params.id;
   
   try {
-    const mulherDeletada = await Diva.findByIdAndUpdate(id);
+    const mulherDeletada = await Diva.findByIdAndDelete(id);
 
     if(!mulherDeletada) {
       return response.status(404).json({mensagem: 'Mulher não encontrada'})
