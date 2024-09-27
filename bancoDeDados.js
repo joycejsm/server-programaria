@@ -7,7 +7,7 @@ async function connectionBD () {
     try{
     console.log(chalk.bgBlue('The connection has initiated!'))
 
-    await mongoose.connect(process.env.MONGO_URL)
+    const mongoUrl = await mongoose.connect(process.env.MONGO_URL)
 
     console.log('Connection sucefully done!')
     } catch(erro) {
