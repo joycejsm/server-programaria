@@ -1,5 +1,5 @@
 import express from 'express';
-import dotenv from'dotenv';
+// import dotenv from'dotenv';
 import olaRouter from './ola.js';
 import mulherRouter from './mulher.js';
 import horaLocal from './horaLocal.js';
@@ -7,7 +7,7 @@ import cors from 'cors';
 import connectionBD from './bancoDeDados.js';
 
 connectionBD()
-dotenv.config()
+// dotenv.config()
 
 const app = express();
 app.use(express.json());
